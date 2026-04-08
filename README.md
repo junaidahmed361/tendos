@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # tendos
 Plug-and-play AI cartridge hub — package, distribute, and run composable AI harness configurations locally.
 =======
@@ -104,4 +103,3 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deve
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE) for details.
->>>>>>> 30919c6 (feat: initial Tendos v0.1.0 — AI cartridge hub foundation)
