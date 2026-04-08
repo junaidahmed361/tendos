@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Dict, Any
+from typing import Any
 import jwt
 
 
@@ -35,7 +35,7 @@ class TokenManager:
         }
         return jwt.encode(payload, self._secret, algorithm=self.ALGORITHM)
 
-    def validate(self, token: str) -> Dict[str, Any]:
+    def validate(self, token: str) -> dict[str, Any]:
         try:
             return jwt.decode(token, self._secret, algorithms=[self.ALGORITHM])
         except jwt.ExpiredSignatureError as e:
