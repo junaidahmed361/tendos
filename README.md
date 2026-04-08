@@ -1,3 +1,6 @@
+# tendos
+Plug-and-play AI cartridge hub — package, distribute, and run composable AI harness configurations locally.
+=======
 # Tendos
 
 **Plug-and-play AI cartridge hub — package, distribute, and run composable AI harness configurations locally.**

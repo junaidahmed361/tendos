@@ -1551,13 +1551,16 @@ name = "tendos"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "bandit" },
     { name = "click" },
     { name = "cryptography" },
     { name = "httpx" },
+    { name = "mypy" },
     { name = "pydantic" },
     { name = "pyjwt" },
     { name = "pyyaml" },
     { name = "rich" },
+    { name = "ruff" },
 ]
 
 [package.optional-dependencies]
@@ -1575,11 +1578,13 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "bandit", specifier = ">=1.9.4" },
     { name = "bandit", marker = "extra == 'dev'", specifier = ">=1.7" },
     { name = "click", specifier = ">=8.0" },
     { name = "cryptography", specifier = ">=42.0" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.100" },
+    { name = "mypy", specifier = ">=1.20.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.7" },
     { name = "pydantic", specifier = ">=2.0" },
@@ -1589,6 +1594,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "rich", specifier = ">=13.0" },
+    { name = "ruff", specifier = ">=0.15.9" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
     { name = "safety", marker = "extra == 'dev'", specifier = ">=3.0" },
 ]
