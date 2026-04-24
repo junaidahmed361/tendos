@@ -39,10 +39,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/tendos-ai/tendos"
-Repository = "https://github.com/tendos-ai/tendos"
-Issues = "https://github.com/tendos-ai/tendos/issues"
-Documentation = "https://github.com/tendos-ai/tendos"
+Homepage = "https://github.com/junaidahmed361/tendos"
+Repository = "https://github.com/junaidahmed361/tendos"
+Issues = "https://github.com/junaidahmed361/tendos/issues"
+Documentation = "https://github.com/junaidahmed361/tendos"
 
 [project.optional-dependencies]
 dev = [

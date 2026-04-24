@@ -12,17 +12,17 @@ repos:
       - id: check-merge-conflict
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.1
+    rev: v0.15.9
     hooks:
       - id: ruff
-        args: ['check', '--fix']
+        args: ['--fix']
       - id: ruff-format
 
   - repo: local
     hooks:
       - id: mypy
         name: mypy
-        entry: uv run mypy
+        entry: uv run mypy src/tendos
         language: system
         types: [python]
         pass_filenames: false

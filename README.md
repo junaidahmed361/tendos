@@ -1,23 +1,42 @@
-# tendos
-Plug-and-play AI cartridge hub — package, distribute, and run composable AI harness configurations locally.
-=======
 # Tendos
 
-**Plug-and-play AI cartridge hub — package, distribute, and run composable AI harness configurations locally.**
+Plug-and-play AI cartridge hub — package, distribute, and run composable AI harness configurations locally, then deploy the same cartridges to hosted Tendos Cloud.
 
-[![CI](https://github.com/tendos-ai/tendos/actions/workflows/ci.yml/badge.svg)](https://github.com/tendos-ai/tendos/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/codecov/c/github/tendos-ai/tendos)](https://codecov.io/gh/tendos-ai/tendos)
-[![PyPI](https://img.shields.io/pypi/v/tendos)](https://pypi.org/project/tendos/)
+Tendos is building toward "Docker for AI agents and harnesses": portable, signed cartridges with reproducible execution across local machines and managed cloud.
+
+[![CI](https://github.com/junaidahmed361/tendos/actions/workflows/ci.yml/badge.svg)](https://github.com/junaidahmed361/tendos/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://python.org)
 
 ---
 
-## What is Tendos?
+## Vision
 
-Tendos is an open-source platform for packaging, distributing, and running **AI cartridges** — self-contained units that bundle a model specification (base model + optional LoRA adapters), an agent graph, tool definitions, system prompts, and licensing metadata into a single deployable artifact. Think of cartridges as game cartridges for AI: plug one in, and it runs.
+Small and open language models are making local AI practical. Tendos exists so builders and teams do not have to re-create agent harnesses from scratch for every use case.
 
-The platform serves two audiences simultaneously. **AI builders** package their fine-tuned models and agent configurations into cartridges and distribute them via the Tendos Hub — with optional pay-per-use monetization. **Domain professionals** (healthcare, legal, finance, etc.) browse the Hub, download cartridges, and stack them into local AI workflows without writing a single line of code. Privacy-first: all inference runs on your hardware by default.
+A Tendos cartridge is a reusable, swappable unit that can bundle:
+
+- model configuration (base model + optional adapters)
+- agent configuration (prompt, nodes, graph, tools)
+- security and trust data (checksums, signatures)
+- licensing and usage metadata
+
+Long-term direction:
+
+- local-first execution by default (privacy and ownership)
+- hosted deployment option via Tendos Cloud (pay to host)
+- community ecosystem where creators publish cartridges and users install/compose them quickly
+
+## What is Tendos today?
+
+Tendos currently provides the v0.1 foundation for cartridge packaging and trust:
+
+- Cartridge specification and manifest schema validation
+- Cartridge loader for validate/pack/unpack workflows
+- Ed25519 signing and signature verification
+- AES-256-GCM encryption helpers for protected artifacts
+- JWT token utilities for pay-per-use licensing primitives
+- CLI scaffolding for cartridge lifecycle operations
 
 ## Quick Start
 
@@ -38,33 +57,31 @@ tendos pack my-cartridge/
 
 # Sign the cartridge for integrity verification
 tendos sign my-cartridge.cartridge --key ~/.tendos/signing.key
+
+# Verify signature
+tendos verify my-cartridge.cartridge --pub ~/.tendos/signing.pub --sig my-cartridge.cartridge.sig
 ```
 
-## Features
+## Core Principles
 
-- **Cartridge Specification v1.0** — Open, versioned schema for packaging AI configurations (model, LoRA, agent graph, tools, prompts, licensing) as a single unit
-- **Local Runtime** — Execute cartridges on your hardware via Ollama, llama.cpp, or vLLM, with enterprise API fallback
-- **Security** — Ed25519 cartridge signing, AES-256-GCM LoRA weight encryption, JWT-based pay-per-use tokens
-- **Composability** — Stack cartridges like building blocks; dependency resolution and conflict detection built in
-- **Privacy-First** — All data stays on-device by default; opt-in telemetry only
-- **Hub Marketplace** — Discover, distribute, and monetize cartridges (coming soon)
+- Local-first: run on your hardware first, with cloud as an option
+- Portable artifacts: one cartridge format for reuse and sharing
+- Trust by default: signing, verification, and integrity checks
+- Composability: stack cartridges for domain-specific workflows
 
 ## Development
 
 ```bash
 # Clone and install
-git clone https://github.com/tendos-ai/tendos.git
+git clone https://github.com/junaidahmed361/tendos.git
 cd tendos
 uv sync --all-extras
 
 # Run tests
 make test
 
-# Run the full quality suite (lint + typecheck + security + test)
+# Run full quality suite
 make all
-
-# Format code
-make format
 
 # Run pre-commit hooks
 make pre-commit
@@ -72,34 +89,39 @@ make pre-commit
 
 ### Project Structure
 
-```
+```text
 src/tendos/
-  cartridge/    # Cartridge spec schema, loader, validator
-  runtime/      # Local execution engine, model/agent layers
-  hub/          # Hub API client and authentication
+  cartridge/    # Cartridge schema, loader, validator
+  runtime/      # Runtime execution engine (expanding)
+  hub/          # Marketplace and registry client (expanding)
   security/     # Signing, encryption, JWT tokens
-  cli/          # Command-line interface (Click)
+  cli/          # Command-line interface
 tests/
-  unit/         # Unit tests (TDD)
-  integration/  # Integration tests
+  unit/
+  integration/
 ```
 
-### Development Philosophy
+### Quality Gates
 
-Tendos follows **test-driven development (TDD)**. Every feature starts with a failing test. The workflow is:
+All pull requests are expected to pass:
 
-1. Write a test that defines expected behavior
-2. Run it — confirm it fails
-3. Write the minimum code to make it pass
-4. Refactor
-5. Repeat
+- ruff lint + formatting checks
+- mypy strict type checks
+- bandit static security scan
+- pytest with coverage threshold
+- pre-commit hooks
 
-All PRs require passing lint (`ruff`), type checking (`mypy --strict`), security scanning (`bandit`), and a minimum 80% test coverage.
+## Roadmap (high level)
+
+1. Local execution runtime for cartridges
+2. Lockfile + compatibility checks for reproducibility
+3. Community hub for publish/discover/install workflows
+4. Tendos Cloud hosted deployment for managed agent execution
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, and the PR process.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE) for details.
+Apache License 2.0 — see [LICENSE](LICENSE).
