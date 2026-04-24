@@ -28,7 +28,22 @@ def init(name: str) -> None:
 
     cartridge_dir.mkdir(parents=True)
     (cartridge_dir / "prompts").mkdir()
+    (cartridge_dir / "harness").mkdir()
     (cartridge_dir / "prompts" / "system.txt").write_text("You are a helpful AI assistant.\n")
+    (cartridge_dir / "harness" / "harness.yaml").write_text(
+        """
+security_guardrails:
+  - prompt_injection_detection
+  - tool_allowlist
+pii_redaction:
+  enabled: true
+  strategy: mask
+update_sync:
+  strategy: signed_pull
+  interval: weekly
+  signed_updates_required: true
+""".lstrip()
+    )
 
     manifest = {
         "name": name,
@@ -39,6 +54,7 @@ def init(name: str) -> None:
         "license": "Apache-2.0",
         "model": {"base": "llama-3.3-8b-q4", "source": "ollama"},
         "agent": {"system_prompt": "prompts/system.txt"},
+        "harness": {"yaml_path": "harness/harness.yaml"},
     }
     (cartridge_dir / "cartridge.json").write_text(json.dumps(manifest, indent=2) + "\n")
     click.echo(f"Cartridge '{name}' initialized at ./{name}/")

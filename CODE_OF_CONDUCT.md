@@ -43,8 +43,8 @@ an individual is officially representing the community in public spaces.
 
 ## Enforcement
 
-Instances of unacceptable behavior may be reported to the community leaders
-responsible for enforcement at **conduct@tendos.ai**. All complaints will be
+Instances of unacceptable behavior may be reported via the repository issue tracker
+or GitHub Discussions with the "code-of-conduct" label. All complaints will be
 reviewed and investigated promptly and fairly.
 
 ## Attribution

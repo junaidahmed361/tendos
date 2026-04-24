@@ -10,13 +10,17 @@ from tendos.cartridge.schema import (
     CartridgeManifest,
     ComposabilityConfig,
     HardwareRequirements,
+    HarnessConfig,
+    HarnessDeclarations,
     InferenceParams,
     LoRAAdapter,
     MemoryConfig,
     ModelConfig,
+    PIIRedactionConfig,
     PricingConfig,
     PricingModel,
     ToolDefinition,
+    UpdateSyncConfig,
 )
 
 
@@ -127,6 +131,31 @@ class TestHardwareRequirements:
         assert h.min_vram_gb == 8
 
 
+class TestHarnessConfig:
+    def test_harness_yaml_path_only(self):
+        h = HarnessConfig(yaml_path="harness/harness.yaml")
+        assert h.yaml_path == "harness/harness.yaml"
+        assert h.declarations is None
+
+    def test_inline_harness_declarations(self):
+        h = HarnessConfig(
+            declarations=HarnessDeclarations(
+                security_guardrails=["prompt_injection_detection", "tool_allowlist"],
+                pii_redaction=PIIRedactionConfig(enabled=True, strategy="mask"),
+                update_sync=UpdateSyncConfig(strategy="signed_pull", interval="daily"),
+            )
+        )
+        assert "tool_allowlist" in h.declarations.security_guardrails
+        assert h.declarations.pii_redaction is not None
+        assert h.declarations.pii_redaction.enabled is True
+        assert h.declarations.update_sync is not None
+        assert h.declarations.update_sync.strategy == "signed_pull"
+
+    def test_harness_requires_yaml_or_declarations(self):
+        with pytest.raises(ValueError, match="yaml_path|declarations"):
+            HarnessConfig()
+
+
 class TestCartridgeManifest:
     @pytest.fixture
     def minimal_manifest_data(self):
@@ -183,11 +212,22 @@ class TestCartridgeManifest:
             "privacy": {"data_stays_local": True, "compliance_attestations": ["HIPAA"]},
             "composability": {"depends_on": ["hub://base-runtime"]},
             "evaluation": {"accuracy_score": 0.94, "latency_p50_ms": 420, "dataset": "MIMIC-III"},
+            "harness": {
+                "yaml_path": "harness/harness.yaml",
+                "declarations": {
+                    "security_guardrails": ["prompt_injection_detection", "tool_allowlist"],
+                    "pii_redaction": {"enabled": True, "strategy": "mask"},
+                    "update_sync": {"strategy": "signed_pull", "interval": "daily"},
+                },
+            },
         }
         m = CartridgeManifest(**data)
         assert m.pricing.price_per_call == 0.02
         assert m.hardware.requires_gpu is True
         assert "HIPAA" in m.privacy.compliance_attestations
+        assert m.harness is not None
+        assert m.harness.declarations is not None
+        assert "tool_allowlist" in m.harness.declarations.security_guardrails
 
     def test_to_json_roundtrip(self, minimal_manifest_data):
         m = CartridgeManifest(**minimal_manifest_data)

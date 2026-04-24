@@ -15,12 +15,13 @@ If you discover a security vulnerability in Tendos, please report it **responsib
 
 ### How to Report
 
-**Email**: [security@tendos.ai](mailto:security@tendos.ai)
+Use GitHub's private vulnerability reporting flow:
 
-**Do not**:
-- Open a public GitHub issue
-- Disclose the vulnerability publicly
-- Post on social media or forums
+- Go to the Security tab of this repository
+- Click "Report a vulnerability"
+- Submit the report with reproduction details
+
+If you cannot use GitHub Security Advisories, open a minimal public issue requesting a private security contact path (without disclosing exploit details).
 
 ### What to Include
 
@@ -77,12 +78,12 @@ When using Tendos:
 2. **Use trusted cartridges**: Only load cartridges from trusted sources
 3. **Review permissions**: Understand what permissions cartridges request
 4. **Sandbox sensitive workloads**: Run untrusted cartridges in isolated environments
-5. **Report suspicious activity**: Report suspicious cartridges or behavior to security@tendos.ai
+5. **Report suspicious activity**: Open a GitHub issue with relevant evidence (without sharing secrets)
 
 ## Security Questions
 
 For security-related questions that don't constitute a vulnerability report:
 - Open a discussion in the repository
-- Email security@tendos.ai (non-emergency inquiries only)
+- Open a GitHub issue labeled `security-question` for non-sensitive inquiries
 
 Thank you for helping keep Tendos secure!

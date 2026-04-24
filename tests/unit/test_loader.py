@@ -72,6 +72,17 @@ class TestCartridgeLoader:
         errors = loader.validate_directory(sample_cartridge_dir)
         assert any("system_prompt" in e.lower() or "prompts/system.txt" in e for e in errors)
 
+    def test_validate_missing_harness_yaml(
+        self, loader: CartridgeLoader, sample_cartridge_dir: Path
+    ):
+        manifest_path = sample_cartridge_dir / "cartridge.json"
+        manifest_data = json.loads(manifest_path.read_text())
+        manifest_data["harness"] = {"yaml_path": "harness/harness.yaml"}
+        manifest_path.write_text(json.dumps(manifest_data, indent=2))
+
+        errors = loader.validate_directory(sample_cartridge_dir)
+        assert any("harness" in e.lower() for e in errors)
+
     def test_pack_creates_archive(
         self, loader: CartridgeLoader, sample_cartridge_dir: Path, tmp_path: Path
     ):

@@ -1,0 +1,46 @@
+{
+  "name": "hermes-local-agent",
+  "version": "0.1.1",
+  "author": "junaidahmed361",
+  "domain": "local-automation",
+  "description": "Dogfood cartridge that launches a local Hermes agent on top of a memory-friendly Ollama base model.",
+  "license": "Apache-2.0",
+  "tags": ["hermes", "ollama", "local", "dogfood"],
+  "model": {
+    "base": "qwen2.5:3b",
+    "source": "ollama",
+    "inference_params": {
+      "temperature": 0.2,
+      "max_tokens": 2048,
+      "top_p": 0.9
+    }
+  },
+  "agent": {
+    "system_prompt": "prompts/system.txt",
+    "tools": []
+  },
+  "harness": {
+    "yaml_path": "harness/harness.yaml",
+    "declarations": {
+      "security_guardrails": [
+        "prompt_injection_detection",
+        "tool_allowlist",
+        "local_filesystem_scope"
+      ],
+      "pii_redaction": {
+        "enabled": true,
+        "strategy": "mask",
+        "entities": ["email", "phone", "ssn", "credit_card"]
+      },
+      "update_sync": {
+        "strategy": "signed_pull",
+        "interval": "weekly",
+        "signed_updates_required": true
+      }
+    }
+  },
+  "privacy": {
+    "data_stays_local": true,
+    "compliance_attestations": ["local-first"]
+  }
+}

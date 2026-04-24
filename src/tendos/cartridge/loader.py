@@ -59,6 +59,10 @@ class CartridgeLoader:
             dag_path = cartridge_dir / manifest.agent.dag_path
             if not dag_path.exists():
                 errors.append(f"Missing DAG file: {manifest.agent.dag_path}")
+        if manifest.harness and manifest.harness.yaml_path:
+            harness_path = cartridge_dir / manifest.harness.yaml_path
+            if not harness_path.exists():
+                errors.append(f"Missing harness yaml: {manifest.harness.yaml_path}")
         return errors
 
     def pack(self, cartridge_dir: Path, output_path: Path) -> Path:

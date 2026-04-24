@@ -1,0 +1,27 @@
+launcher:
+  type: command
+  command: hermes
+  args:
+    - "--model"
+    - "ollama/qwen2.5:3b"
+    - "--prompt-file"
+    - "prompts/system.txt"
+
+security_guardrails:
+  - prompt_injection_detection
+  - tool_allowlist
+  - local_filesystem_scope
+
+pii_redaction:
+  enabled: true
+  strategy: mask
+  entities:
+    - email
+    - phone
+    - ssn
+    - credit_card
+
+update_sync:
+  strategy: signed_pull
+  interval: weekly
+  signed_updates_required: true

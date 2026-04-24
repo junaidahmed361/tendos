@@ -38,6 +38,7 @@ Tendos currently provides the v0.1 foundation for cartridge packaging and trust:
 - Ed25519 signing and signature verification
 - AES-256-GCM encryption helpers for protected artifacts
 - JWT token utilities for pay-per-use licensing primitives
+- Harness YAML declarations for security guardrails, PII redaction, and update/sync policies
 - CLI scaffolding for cartridge lifecycle operations
 
 ## Quick Start

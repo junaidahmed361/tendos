@@ -167,6 +167,44 @@ class PrivacyConfig(BaseModel):
     compliance_attestations: list[str] = []
 
 
+class PIIRedactionConfig(BaseModel):
+    """PII redaction settings for harness execution."""
+
+    enabled: bool = True
+    strategy: str = "mask"
+    entities: list[str] = []
+
+
+class UpdateSyncConfig(BaseModel):
+    """Update and sync policy for cartridge lifecycle."""
+
+    strategy: str = "manual"
+    interval: str | None = None
+    signed_updates_required: bool = True
+
+
+class HarnessDeclarations(BaseModel):
+    """Harness declarations that can be defined in YAML or inline manifest."""
+
+    security_guardrails: list[str] = []
+    pii_redaction: PIIRedactionConfig | None = None
+    update_sync: UpdateSyncConfig | None = None
+
+
+class HarnessConfig(BaseModel):
+    """Harness configuration with YAML path and optional inline declarations."""
+
+    yaml_path: str | None = None
+    declarations: HarnessDeclarations | None = None
+
+    @model_validator(mode="after")
+    def validate_harness_source(self) -> HarnessConfig:
+        """Require either yaml_path or inline declarations."""
+        if self.yaml_path is None and self.declarations is None:
+            raise ValueError("harness requires yaml_path or declarations")
+        return self
+
+
 class CartridgeManifest(BaseModel):
     """Complete cartridge manifest specification."""
 
@@ -184,6 +222,7 @@ class CartridgeManifest(BaseModel):
     evaluation: EvaluationMetadata = EvaluationMetadata()
     hardware: HardwareRequirements = HardwareRequirements()
     privacy: PrivacyConfig = PrivacyConfig()
+    harness: HarnessConfig | None = None
     checksum: str | None = None
     signed: bool = False
 

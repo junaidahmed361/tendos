@@ -45,7 +45,7 @@ class TestCLIRoot:
     def test_version(self, runner):
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "0.1.0" in result.output
+        assert "0.1.1" in result.output
 
 
 class TestInit:
@@ -59,6 +59,8 @@ class TestInit:
             assert cartridge_dir.exists()
             assert (cartridge_dir / "cartridge.json").exists()
             assert (cartridge_dir / "prompts").is_dir()
+            assert (cartridge_dir / "harness").is_dir()
+            assert (cartridge_dir / "harness" / "harness.yaml").exists()
 
     def test_init_existing_dir_fails(self, runner, tmp_path):
         with runner.isolated_filesystem(temp_dir=tmp_path):
