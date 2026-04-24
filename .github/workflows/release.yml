@@ -44,7 +44,7 @@ jobs:
           skip-existing: true
 
       - name: Skip PyPI publish if token not configured
-        if: ${{ secrets.PYPI_API_TOKEN == '' }}
+        if: ${{ !secrets.PYPI_API_TOKEN }}
         run: |
           echo "::warning::PYPI_API_TOKEN is not configured. Skipping PyPI publish."
           echo "Configure PYPI_API_TOKEN or set up PyPI trusted publishing for this repository/workflow."
