@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, field_validator, model_validator
 
@@ -189,6 +190,7 @@ class HarnessDeclarations(BaseModel):
     security_guardrails: list[str] = []
     pii_redaction: PIIRedactionConfig | None = None
     update_sync: UpdateSyncConfig | None = None
+    custom_config: dict[str, Any] = {}
 
 
 class HarnessConfig(BaseModel):

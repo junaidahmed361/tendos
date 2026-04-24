@@ -36,6 +36,13 @@
         "strategy": "signed_pull",
         "interval": "weekly",
         "signed_updates_required": true
+      },
+      "custom_config": {
+        "launcher": {
+          "type": "command",
+          "command": "hermes",
+          "args": ["chat", "-q", "Say 'ready' in one word.", "-m", "ollama/qwen2.5:3b", "-Q"]
+        }
       }
     }
   },

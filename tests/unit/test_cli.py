@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 import pytest
+import yaml
 from click.testing import CliRunner
 
 from tendos.cli.main import cli
@@ -33,6 +34,33 @@ def sample_cartridge_dir(tmp_path):
     (cartridge_dir / "cartridge.json").write_text(json.dumps(manifest, indent=2))
     (cartridge_dir / "prompts").mkdir()
     (cartridge_dir / "prompts" / "system.txt").write_text("You are a helpful assistant.")
+    return cartridge_dir
+
+
+@pytest.fixture
+def runnable_cartridge_dir(tmp_path):
+    cartridge_dir = tmp_path / "run-cartridge"
+    cartridge_dir.mkdir()
+    (cartridge_dir / "prompts").mkdir()
+    (cartridge_dir / "prompts" / "system.txt").write_text("You are a runner.")
+    (cartridge_dir / "harness").mkdir()
+    harness_data = {
+        "launcher": {"type": "command", "command": "/bin/echo", "args": ["hello-from-tendos-run"]}
+    }
+    (cartridge_dir / "harness" / "harness.yaml").write_text(yaml.safe_dump(harness_data))
+
+    manifest = {
+        "name": "run-cartridge",
+        "version": "1.0.0",
+        "author": "testuser",
+        "domain": "test",
+        "description": "Runnable cartridge",
+        "license": "Apache-2.0",
+        "model": {"base": "llama-3.3-8b-q4", "source": "ollama"},
+        "agent": {"system_prompt": "prompts/system.txt"},
+        "harness": {"yaml_path": "harness/harness.yaml"},
+    }
+    (cartridge_dir / "cartridge.json").write_text(json.dumps(manifest, indent=2))
     return cartridge_dir
 
 
@@ -97,6 +125,42 @@ class TestPack:
         empty.mkdir()
         result = runner.invoke(cli, ["pack", str(empty)])
         assert result.exit_code != 0
+
+
+class TestRun:
+    def test_run_dry_run_prints_command(self, runner, runnable_cartridge_dir):
+        result = runner.invoke(cli, ["run", str(runnable_cartridge_dir), "--dry-run"])
+        assert result.exit_code == 0
+        assert "/bin/echo" in result.output
+
+    def test_run_executes_launcher(self, runner, runnable_cartridge_dir):
+        result = runner.invoke(cli, ["run", str(runnable_cartridge_dir)])
+        assert result.exit_code == 0
+        assert "hello-from-tendos-run" in result.output
+
+    def test_run_missing_launcher_fails(self, runner, tmp_path):
+        cartridge_dir = tmp_path / "missing-launcher"
+        cartridge_dir.mkdir()
+        (cartridge_dir / "prompts").mkdir()
+        (cartridge_dir / "prompts" / "system.txt").write_text("x")
+        (cartridge_dir / "harness").mkdir()
+        (cartridge_dir / "harness" / "harness.yaml").write_text(yaml.safe_dump({"foo": "bar"}))
+        manifest = {
+            "name": "missing-launcher",
+            "version": "1.0.0",
+            "author": "testuser",
+            "domain": "test",
+            "description": "missing launcher",
+            "license": "Apache-2.0",
+            "model": {"base": "llama-3.3-8b-q4", "source": "ollama"},
+            "agent": {"system_prompt": "prompts/system.txt"},
+            "harness": {"yaml_path": "harness/harness.yaml"},
+        }
+        (cartridge_dir / "cartridge.json").write_text(json.dumps(manifest, indent=2))
+
+        result = runner.invoke(cli, ["run", str(cartridge_dir)])
+        assert result.exit_code != 0
+        assert "launcher" in result.output.lower()
 
 
 class TestSignAndVerify:

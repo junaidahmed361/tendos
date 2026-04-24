@@ -143,6 +143,9 @@ class TestHarnessConfig:
                 security_guardrails=["prompt_injection_detection", "tool_allowlist"],
                 pii_redaction=PIIRedactionConfig(enabled=True, strategy="mask"),
                 update_sync=UpdateSyncConfig(strategy="signed_pull", interval="daily"),
+                custom_config={
+                    "launcher": {"command": "hermes", "args": ["--model", "ollama/qwen2.5:3b"]}
+                },
             )
         )
         assert "tool_allowlist" in h.declarations.security_guardrails
@@ -150,6 +153,7 @@ class TestHarnessConfig:
         assert h.declarations.pii_redaction.enabled is True
         assert h.declarations.update_sync is not None
         assert h.declarations.update_sync.strategy == "signed_pull"
+        assert h.declarations.custom_config["launcher"]["command"] == "hermes"
 
     def test_harness_requires_yaml_or_declarations(self):
         with pytest.raises(ValueError, match="yaml_path|declarations"):

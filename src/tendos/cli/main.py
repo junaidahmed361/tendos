@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
 import click
+import yaml
 
 from tendos import __version__
 
@@ -93,6 +96,87 @@ def pack(cartridge_dir: str, output: str | None) -> None:
     except (FileNotFoundError, ValueError) as e:
         click.echo(f"Pack failed: {e}", err=True)
         sys.exit(1)
+
+
+@cli.command()
+@click.argument("cartridge_path")
+@click.option("--dry-run", is_flag=True, help="Print launcher command without executing")
+def run(cartridge_path: str, dry_run: bool) -> None:
+    """Run a cartridge harness launcher command."""
+    from tendos.cartridge.loader import CartridgeLoader
+
+    source_path = Path(cartridge_path)
+    cartridge_dir = source_path if source_path.is_dir() else source_path.parent
+    manifest_path = source_path / "cartridge.json" if source_path.is_dir() else source_path
+
+    loader = CartridgeLoader()
+    try:
+        manifest = loader.load_manifest(manifest_path)
+    except (FileNotFoundError, ValueError) as e:
+        click.echo(f"Run failed: {e}", err=True)
+        sys.exit(1)
+
+    launcher: dict[str, object] | None = None
+    if manifest.harness and manifest.harness.yaml_path:
+        harness_path = cartridge_dir / manifest.harness.yaml_path
+        if not harness_path.exists():
+            click.echo(f"Run failed: Missing harness yaml: {manifest.harness.yaml_path}", err=True)
+            sys.exit(1)
+        parsed = yaml.safe_load(harness_path.read_text(encoding="utf-8"))
+        if isinstance(parsed, dict):
+            raw_launcher = parsed.get("launcher")
+            if isinstance(raw_launcher, dict):
+                launcher = raw_launcher
+
+    if launcher is None and manifest.harness and manifest.harness.declarations:
+        raw_launcher = manifest.harness.declarations.custom_config.get("launcher")
+        if isinstance(raw_launcher, dict):
+            launcher = raw_launcher
+
+    if launcher is None:
+        click.echo("Run failed: harness launcher definition not found", err=True)
+        sys.exit(1)
+
+    command = launcher.get("command")
+    args_obj = launcher.get("args", [])
+    if not isinstance(command, str) or not command:
+        click.echo("Run failed: launcher.command must be a non-empty string", err=True)
+        sys.exit(1)
+    if not isinstance(args_obj, list) or any(not isinstance(v, str) for v in args_obj):
+        click.echo("Run failed: launcher.args must be a list of strings", err=True)
+        sys.exit(1)
+    args: list[str] = args_obj
+
+    cmd = [command, *args]
+    click.echo(f"Launcher command: {' '.join(cmd)}")
+    if dry_run:
+        return
+
+    env = os.environ.copy()
+    raw_env = launcher.get("env", {})
+    if isinstance(raw_env, dict):
+        env.update({str(k): str(v) for k, v in raw_env.items()})
+
+    run_cwd = cartridge_dir
+    raw_cwd = launcher.get("cwd")
+    if isinstance(raw_cwd, str) and raw_cwd:
+        run_cwd = cartridge_dir / raw_cwd
+
+    result = subprocess.run(  # noqa: S603  # nosec B603
+        cmd,
+        cwd=run_cwd,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.stdout:
+        click.echo(result.stdout.rstrip("\n"))
+    if result.stderr:
+        click.echo(result.stderr.rstrip("\n"), err=True)
+    if result.returncode != 0:
+        click.echo(f"Run failed: launcher exited with code {result.returncode}", err=True)
+        sys.exit(result.returncode)
 
 
 @cli.command()

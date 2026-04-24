@@ -39,6 +39,7 @@ Tendos currently provides the v0.1 foundation for cartridge packaging and trust:
 - AES-256-GCM encryption helpers for protected artifacts
 - JWT token utilities for pay-per-use licensing primitives
 - Harness YAML declarations for security guardrails, PII redaction, and update/sync policies
+- Manual/custom harness declarations via `harness.declarations.custom_config` for user-defined launcher/runtime keys
 - CLI scaffolding for cartridge lifecycle operations
 
 ## Quick Start
@@ -63,6 +64,9 @@ tendos sign my-cartridge.cartridge --key ~/.tendos/signing.key
 
 # Verify signature
 tendos verify my-cartridge.cartridge --pub ~/.tendos/signing.pub --sig my-cartridge.cartridge.sig
+
+# Run harness launcher (if declared)
+tendos run my-cartridge/
 ```
 
 ## Core Principles

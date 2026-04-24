@@ -2,10 +2,12 @@ launcher:
   type: command
   command: hermes
   args:
-    - "--model"
+    - "chat"
+    - "-q"
+    - "Say 'ready' in one word."
+    - "-m"
     - "ollama/qwen2.5:3b"
-    - "--prompt-file"
-    - "prompts/system.txt"
+    - "-Q"
 
 security_guardrails:
   - prompt_injection_detection

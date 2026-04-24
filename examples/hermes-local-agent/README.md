@@ -21,6 +21,9 @@ uv run tendos pack examples/hermes-local-agent/
 # Ensure model exists locally
 ollama pull qwen2.5:3b
 
-# Launch using harness command (direct)
-hermes --model ollama/qwen2.5:3b --prompt-file examples/hermes-local-agent/prompts/system.txt
+# Dry-run launcher resolution
+uv run tendos run examples/hermes-local-agent --dry-run
+
+# Launch through Tendos
+uv run tendos run examples/hermes-local-agent
 ```
