@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "hermes" ]]; then
+  shift
+fi
+
+if [[ "${1:-}" != "chat" ]]; then
+  echo "unsupported command: ${1:-}" >&2
+  exit 2
+fi
+shift
+
+query=""
+model="${OLLAMA_MODEL:-qwen2.5:0.5b}"
+quiet="false"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -q|--query)
+      query="${2:-}"
+      shift 2
+      ;;
+    -m|--model)
+      model="${2:-$model}"
+      shift 2
+      ;;
+    -Q|--quiet)
+      quiet="true"
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "$query" ]]; then
+  query="Say 'ready' in one word."
+fi
+
+if [[ "$model" == ollama/* ]]; then
+  model="${model#ollama/}"
+fi
+
+ollama serve >/tmp/ollama.log 2>&1 &
+ollama_pid=$!
+cleanup() {
+  kill "$ollama_pid" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+for _ in $(seq 1 60); do
+  if curl -sf http://127.0.0.1:11434/api/tags >/dev/null; then
+    break
+  fi
+  sleep 1
+done
+
+ollama pull "$model" >/tmp/ollama-pull.log 2>&1
+
+if [[ "$quiet" == "true" ]]; then
+  ollama run "$model" "$query"
+else
+  echo "model=$model"
+  ollama run "$model" "$query"
+fi

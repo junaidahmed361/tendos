@@ -1,18 +1,20 @@
 launcher:
   type: docker
-  image: tendos/hermes-local-agent:0.1.2
+  image: tendos/mle-interview-tutor:0.1.2
   build:
     context: .
     dockerfile: harness/Dockerfile
   env:
-    OLLAMA_MODEL: qwen2.5:0.5b
+    OLLAMA_MODEL: qwen2.5-coder:3b
+  volumes:
+    - tendos-mle-ollama:/root/.ollama
   command: hermes
   args:
     - "chat"
     - "-q"
-    - "Say 'ready' in one word."
+    - "Teach Arrays & Hashing for MLE interview prep with subtopic counter 1/14 and ask 3 warmup recall questions."
     - "-m"
-    - "ollama/qwen2.5:0.5b"
+    - "ollama/qwen2.5-coder:3b"
     - "-Q"
 
 security_guardrails:

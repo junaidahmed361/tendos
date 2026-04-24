@@ -1,13 +1,13 @@
 {
-  "name": "hermes-local-agent",
+  "name": "mle-interview-tutor",
   "version": "0.1.2",
   "author": "junaidahmed361",
-  "domain": "local-automation",
-  "description": "Dogfood cartridge that launches a local Hermes agent on top of a memory-friendly Ollama base model.",
+  "domain": "interview-prep",
+  "description": "Containerized local MLE interview tutoring agent cartridge aligned with daily lesson runner teaching contract.",
   "license": "Apache-2.0",
-  "tags": ["hermes", "ollama", "local", "dogfood"],
+  "tags": ["mle", "interview", "tutor", "ollama", "qwen", "local"],
   "model": {
-    "base": "qwen2.5:0.5b",
+    "base": "qwen2.5-coder:3b",
     "source": "ollama",
     "inference_params": {
       "temperature": 0.2,
@@ -40,11 +40,19 @@
       "custom_config": {
         "launcher": {
           "type": "docker",
-          "image": "tendos/hermes-local-agent:0.1.2",
+          "image": "tendos/mle-interview-tutor:0.1.2",
           "build": {"context": ".", "dockerfile": "harness/Dockerfile"},
-          "env": {"OLLAMA_MODEL": "qwen2.5:0.5b"},
+          "env": {"OLLAMA_MODEL": "qwen2.5-coder:3b"},
+          "volumes": ["tendos-mle-ollama:/root/.ollama"],
           "command": "hermes",
-          "args": ["chat", "-q", "Say 'ready' in one word.", "-m", "ollama/qwen2.5:0.5b", "-Q"]
+          "args": [
+            "chat",
+            "-q",
+            "Teach Arrays & Hashing for MLE interview prep with subtopic counter 1/14 and ask 3 warmup recall questions.",
+            "-m",
+            "ollama/qwen2.5-coder:3b",
+            "-Q"
+          ]
         }
       }
     }

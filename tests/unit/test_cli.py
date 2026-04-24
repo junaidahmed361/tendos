@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from subprocess import CompletedProcess
 
 import pytest
 import yaml
@@ -64,6 +65,41 @@ def runnable_cartridge_dir(tmp_path):
     return cartridge_dir
 
 
+@pytest.fixture
+def docker_cartridge_dir(tmp_path):
+    cartridge_dir = tmp_path / "docker-cartridge"
+    cartridge_dir.mkdir()
+    (cartridge_dir / "prompts").mkdir()
+    (cartridge_dir / "prompts" / "system.txt").write_text("You are a docker runner.")
+    (cartridge_dir / "harness").mkdir()
+    harness_data = {
+        "launcher": {
+            "type": "docker",
+            "image": "tendos/docker-cartridge:test",
+            "build": {"context": ".", "dockerfile": "harness/Dockerfile"},
+            "command": "echo",
+            "args": ["hello-from-docker-run"],
+            "env": {"FOO": "bar"},
+        }
+    }
+    (cartridge_dir / "harness" / "harness.yaml").write_text(yaml.safe_dump(harness_data))
+    (cartridge_dir / "harness" / "Dockerfile").write_text("FROM alpine:3.20\n")
+
+    manifest = {
+        "name": "docker-cartridge",
+        "version": "1.0.0",
+        "author": "testuser",
+        "domain": "test",
+        "description": "Docker runnable cartridge",
+        "license": "Apache-2.0",
+        "model": {"base": "llama-3.3-8b-q4", "source": "ollama"},
+        "agent": {"system_prompt": "prompts/system.txt"},
+        "harness": {"yaml_path": "harness/harness.yaml"},
+    }
+    (cartridge_dir / "cartridge.json").write_text(json.dumps(manifest, indent=2))
+    return cartridge_dir
+
+
 class TestCLIRoot:
     def test_help(self, runner):
         result = runner.invoke(cli, ["--help"])
@@ -73,7 +109,7 @@ class TestCLIRoot:
     def test_version(self, runner):
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "0.1.1" in result.output
+        assert "0.1.2" in result.output
 
 
 class TestInit:
@@ -137,6 +173,32 @@ class TestRun:
         result = runner.invoke(cli, ["run", str(runnable_cartridge_dir)])
         assert result.exit_code == 0
         assert "hello-from-tendos-run" in result.output
+
+    def test_run_docker_dry_run_prints_build_and_run(self, runner, docker_cartridge_dir):
+        result = runner.invoke(cli, ["run", str(docker_cartridge_dir), "--dry-run"])
+        assert result.exit_code == 0
+        assert "docker build" in result.output
+        assert "docker run --rm" in result.output
+        assert "tendos/docker-cartridge:test" in result.output
+
+    def test_run_docker_executes_build_and_run(self, runner, docker_cartridge_dir, monkeypatch):
+        calls: list[list[str]] = []
+
+        def fake_run(*args, **kwargs):  # noqa: ANN002, ANN003
+            cmd = args[0]
+            calls.append(cmd)
+            if cmd[:2] == ["docker", "build"]:
+                return CompletedProcess(cmd, 0, stdout="build-ok\n", stderr="")
+            return CompletedProcess(cmd, 0, stdout="hello-from-docker-run\n", stderr="")
+
+        monkeypatch.setattr("tendos.cli.main.subprocess.run", fake_run)
+        result = runner.invoke(cli, ["run", str(docker_cartridge_dir)])
+
+        assert result.exit_code == 0
+        assert len(calls) == 2
+        assert calls[0][:2] == ["docker", "build"]
+        assert calls[1][:2] == ["docker", "run"]
+        assert "hello-from-docker-run" in result.output
 
     def test_run_missing_launcher_fails(self, runner, tmp_path):
         cartridge_dir = tmp_path / "missing-launcher"

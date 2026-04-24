@@ -137,6 +137,111 @@ def run(cartridge_path: str, dry_run: bool) -> None:
         click.echo("Run failed: harness launcher definition not found", err=True)
         sys.exit(1)
 
+    launcher_type = launcher.get("type", "command")
+    if launcher_type not in {"command", "docker"}:
+        click.echo("Run failed: launcher.type must be 'command' or 'docker'", err=True)
+        sys.exit(1)
+
+    if launcher_type == "docker":
+        image_obj = launcher.get("image")
+        image = (
+            image_obj
+            if isinstance(image_obj, str)
+            else f"tendos/{manifest.name}:{manifest.version}"
+        )
+
+        build_obj = launcher.get("build")
+        build_cmd: list[str] | None = None
+        if isinstance(build_obj, dict):
+            context_obj = build_obj.get("context", ".")
+            if not isinstance(context_obj, str) or not context_obj:
+                click.echo(
+                    "Run failed: launcher.build.context must be a non-empty string", err=True
+                )
+                sys.exit(1)
+            context_dir = (cartridge_dir / context_obj).resolve()
+            build_cmd = ["docker", "build", "-t", image]
+            dockerfile_obj = build_obj.get("dockerfile")
+            if isinstance(dockerfile_obj, str) and dockerfile_obj:
+                build_cmd.extend(["-f", str((cartridge_dir / dockerfile_obj).resolve())])
+            build_cmd.append(str(context_dir))
+
+        command_obj = launcher.get("command")
+        args_obj = launcher.get("args", [])
+        if command_obj is not None and (not isinstance(command_obj, str) or not command_obj):
+            click.echo(
+                "Run failed: launcher.command must be a non-empty string when provided", err=True
+            )
+            sys.exit(1)
+        if not isinstance(args_obj, list) or any(not isinstance(v, str) for v in args_obj):
+            click.echo("Run failed: launcher.args must be a list of strings", err=True)
+            sys.exit(1)
+        args: list[str] = args_obj
+
+        env_args: list[str] = []
+        raw_env = launcher.get("env", {})
+        if isinstance(raw_env, dict):
+            for key, value in raw_env.items():
+                env_args.extend(["-e", f"{key}={value}"])
+
+        port_args: list[str] = []
+        ports_obj = launcher.get("ports", [])
+        if isinstance(ports_obj, list) and all(isinstance(v, str) for v in ports_obj):
+            for port in ports_obj:
+                port_args.extend(["-p", port])
+
+        volume_args: list[str] = []
+        volumes_obj = launcher.get("volumes", [])
+        if isinstance(volumes_obj, list) and all(isinstance(v, str) for v in volumes_obj):
+            for volume in volumes_obj:
+                volume_args.extend(["-v", volume])
+
+        docker_run_cmd = ["docker", "run", "--rm", *env_args, *port_args, *volume_args, image]
+        if isinstance(command_obj, str) and command_obj:
+            docker_run_cmd.append(command_obj)
+        docker_run_cmd.extend(args)
+
+        if build_cmd is not None:
+            click.echo(f"Launcher build command: {' '.join(build_cmd)}")
+        click.echo(f"Launcher command: {' '.join(docker_run_cmd)}")
+        if dry_run:
+            return
+
+        if build_cmd is not None:
+            build_result = subprocess.run(  # noqa: S603  # nosec B603
+                build_cmd,
+                cwd=cartridge_dir,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if build_result.stdout:
+                click.echo(build_result.stdout.rstrip("\n"))
+            if build_result.stderr:
+                click.echo(build_result.stderr.rstrip("\n"), err=True)
+            if build_result.returncode != 0:
+                click.echo(
+                    f"Run failed: docker build exited with code {build_result.returncode}",
+                    err=True,
+                )
+                sys.exit(build_result.returncode)
+
+        run_result = subprocess.run(  # noqa: S603  # nosec B603
+            docker_run_cmd,
+            cwd=cartridge_dir,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if run_result.stdout:
+            click.echo(run_result.stdout.rstrip("\n"))
+        if run_result.stderr:
+            click.echo(run_result.stderr.rstrip("\n"), err=True)
+        if run_result.returncode != 0:
+            click.echo(f"Run failed: launcher exited with code {run_result.returncode}", err=True)
+            sys.exit(run_result.returncode)
+        return
+
     command = launcher.get("command")
     args_obj = launcher.get("args", [])
     if not isinstance(command, str) or not command:
@@ -145,7 +250,7 @@ def run(cartridge_path: str, dry_run: bool) -> None:
     if not isinstance(args_obj, list) or any(not isinstance(v, str) for v in args_obj):
         click.echo("Run failed: launcher.args must be a list of strings", err=True)
         sys.exit(1)
-    args: list[str] = args_obj
+    args = args_obj
 
     cmd = [command, *args]
     click.echo(f"Launcher command: {' '.join(cmd)}")

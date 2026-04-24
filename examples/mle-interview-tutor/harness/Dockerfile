@@ -1,0 +1,13 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends bash ca-certificates curl jq zstd \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+COPY harness/hermes /usr/local/bin/hermes
+RUN chmod +x /usr/local/bin/hermes
+
+ENTRYPOINT ["hermes"]

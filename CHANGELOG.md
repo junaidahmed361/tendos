@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-04-24
+
+### Added
+
+- Docker launcher support in `tendos run` (`launcher.type: docker`) with optional build step and env/port/volume passthrough
+- Self-contained dogfood cartridge runtime for `examples/hermes-local-agent` with in-container Ollama + hermes-compatible entrypoint
+- New containerized `examples/mle-interview-tutor` cartridge aligned to daily-lesson-runner tutoring constraints
+- Unit tests for Docker dry-run and build/run launcher execution paths
+
+### Changed
+
+- Dogfood model switched to `qwen2.5:0.5b` for lighter local startup in containerized runs
+
 ## [0.1.1] - 2026-04-24
 
 ### Added

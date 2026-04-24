@@ -40,7 +40,7 @@ Tendos currently provides the v0.1 foundation for cartridge packaging and trust:
 - JWT token utilities for pay-per-use licensing primitives
 - Harness YAML declarations for security guardrails, PII redaction, and update/sync policies
 - Manual/custom harness declarations via `harness.declarations.custom_config` for user-defined launcher/runtime keys
-- CLI scaffolding for cartridge lifecycle operations
+- `tendos run` launcher execution supports both host command launchers and self-contained Docker launchers
 
 ## Quick Start
 
