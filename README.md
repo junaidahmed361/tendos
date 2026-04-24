@@ -4,6 +4,8 @@ Plug-and-play AI cartridge hub — package, distribute, and run composable AI ha
 
 Tendos is building toward "Docker for AI agents and harnesses": portable, signed cartridges with reproducible execution across local machines and managed cloud.
 
+The name and product metaphor come from Nintendo cartridges (plug in and play) combined with Docker-style portability and reproducibility.
+
 [![CI](https://github.com/junaidahmed361/tendos/actions/workflows/ci.yml/badge.svg)](https://github.com/junaidahmed361/tendos/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://python.org)
