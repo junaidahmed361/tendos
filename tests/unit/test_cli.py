@@ -109,7 +109,7 @@ class TestCLIRoot:
     def test_version(self, runner):
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "0.1.2" in result.output
+        assert "0.1.3" in result.output
 
 
 class TestInit:
